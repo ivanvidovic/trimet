@@ -14,7 +14,7 @@ export function createRoute(world,seed=Math.random()*0xffffffff,rosette=null){
  let points=[{x:25,z:0,yaw:0,s:-25}],chunks=[],gates=[],stops=[],boosts=[],index=0,target=0;
  const roadMats=[0x075699,...districts.map(d=>d.color)].map(color=>new THREE.MeshStandardMaterial({color,roughness:.9}));
  const roadMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9});
- const signMat=new THREE.MeshBasicMaterial({map:rosette,transparent:true,side:THREE.DoubleSide,depthWrite:false});
+ const signMat=new THREE.MeshBasicMaterial({map:rosette,transparent:true,side:THREE.DoubleSide,depthWrite:true,alphaTest:.03});
  const white=new THREE.MeshStandardMaterial({color:0xfff2d5});const sharedGeo=new THREE.BoxGeometry(1,1,1);
  const sceneryMats=[0xb7c5a1,0xe2be85,0x698d77,0xe6d9bd,0x343c3d,0xc0a691].map(color=>new THREE.MeshStandardMaterial({color}));
  function cube(g,x,y,z,w,h,d,mat){const m=new THREE.Mesh(sharedGeo,mat);m.position.set(x,y,z);m.scale.set(w,h,d);g.add(m);return m}
@@ -34,9 +34,9 @@ export function createRoute(world,seed=Math.random()*0xffffffff,rosette=null){
  }}
  if(i>0&&p.s>=125&&(p.s-125)%200===0){
  const sign=new THREE.Group();sign.position.set(p.x,0,p.z);sign.rotation.y=p.yaw;g.add(sign);
- cube(sign,0,1.8,-13,.15,3.6,.15,white);cube(sign,0,3.7,-13,.14,1.4,1,roadMats[0]);
+ cube(sign,0,1.5,-13,.10,3.0,.10,white);cube(sign,0,3.7,-13,.14,1.4,1,roadMats[0]);
  // Original TriMet rosette on both sign faces, separated from the backing.
- if(rosette)for(const side of [-1,1]){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.85,.85),signMat);badge.rotation.y=side*Math.PI/2;badge.position.set(side*.085,3.7,-13);sign.add(badge);}
+ if(rosette)for(const side of [-1,1]){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.85,.85),signMat);badge.rotation.y=side*Math.PI/2;badge.position.set(side*.105,3.7,-13);sign.add(badge);}
  cube(sign,0,.045,-7.5,16,.035,3,roadMats[0]);
  for(const x of [-8,8])cube(sign,x,.075,-7.5,.12,.025,3,white);
  stops.push({...p,claimed:false,dwell:0});

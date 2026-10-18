@@ -3,7 +3,7 @@ import {resetState,step,RADIUS,damp,BOOST_DURATION,boostEnvelope} from './physic
 import {createBodyRig} from './body-rig.js';
 import {createLamps} from './lamps.js';
 import {createRoute} from './route.js';
-export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark,rosette,tiltSteering}){
+export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark,rosette,tiltSteering,preloadPortal,onGarage,onDriveStart}){
  const $=id=>document.getElementById(id),world=new THREE.Group(),vehicle=new THREE.Group(),tilt=new THREE.Group();
  scene.add(world,vehicle);world.visible=false;vehicle.add(tilt);tilt.position.x=3.241;tilt.add(bus);bus.position.x=-3.241;
  const lamps=createLamps(bus),bodyRig=createBodyRig(bus);
@@ -17,12 +17,12 @@ export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark,
  function clearRings(){for(const r of rings){world.remove(r.mesh);r.mesh.geometry.dispose();r.mesh.material.dispose()}rings.length=0;}
  function resetPose(){bodyRig.setHeight(0);kneel=0;lamps.update(false);tilt.rotation.set(0,0,0);tilt.position.y=0;wheels.forEach(w=>{w.angle=0;w.o.quaternion.copy(w.q)});steers.forEach(w=>w.o.quaternion.copy(w.q));}
  function reset(newRun=false){keys.clear();touch.clear();wasGas=false;accumulator=0;last=0;clearRings();resetPose();
- if(newRun){route?.dispose();route=createRoute(world,Math.random()*0xffffffff,rosette);progress=0;portalCount=0;tickets=0;$('tickets').textContent='0';runId++;}
+ if(newRun){route?.dispose();route=createRoute(world,Math.random()*0xffffffff,rosette);progress=0;portalCount=0;preloadPortal?.(route.gates[0]?.d.wrap??0);tickets=0;$('tickets').textContent='0';runId++;}
  const p=route.nearest(state.x,state.z);state=resetState(newRun?0:p.x,newRun?0:p.z,newRun?0:p.yaw);vehicle.position.set(state.x,0,state.z);vehicle.rotation.y=state.yaw;$('portal-toast').hidden=true;$('drive-state').textContent='';$('ticket-pop').hidden=true;
  if(newRun){$('line').textContent='BLUE LINE';$('line').style.background='#075699';}cameraFollow(1,true);
  }
- function start(){driving=true;world.visible=true;controls.enabled=false;document.body.classList.add('driving');scene.fog.near=95;scene.fog.far=300;camera.far=450;camera.updateProjectionMatrix();reset(true);$('viewer').focus();mark();}
- function stop(){driving=false;$('viewer').blur?.();tiltSteering?.reset();showcase=0;runId++;keys.clear();touch.clear();clearRings();world.visible=false;vehicle.position.set(0,0,0);vehicle.rotation.set(0,0,0);resetPose();if(floor)floor.position.set(0,-.015,0);controls.enabled=true;document.body.classList.remove('driving','boosting');scene.fog.near=28;scene.fog.far=65;camera.fov=38;camera.updateProjectionMatrix();sun.position.set(-5,11,7);sun.target.position.set(0,0,0);$('portal-toast').hidden=true;view('hero');}
+ function start(){onDriveStart?.();driving=true;world.visible=true;controls.enabled=false;document.body.classList.add('driving');scene.fog.near=95;scene.fog.far=300;camera.far=450;camera.updateProjectionMatrix();reset(true);$('viewer').focus();mark();}
+ function stop(){driving=false;$('viewer').blur?.();tiltSteering?.reset();showcase=0;runId++;keys.clear();touch.clear();clearRings();world.visible=false;vehicle.position.set(0,0,0);vehicle.rotation.set(0,0,0);resetPose();if(floor)floor.position.set(0,-.015,0);controls.enabled=true;document.body.classList.remove('driving','boosting');scene.fog.near=28;scene.fog.far=65;camera.fov=38;camera.updateProjectionMatrix();sun.position.set(-5,11,7);sun.target.position.set(0,0,0);$('portal-toast').hidden=true;view('hero');onGarage?.();}
  $('start').onclick=start;$('garage').onclick=stop;$('respawn').onclick=()=>reset();$('camera-mode').onclick=cycle;
  const aliases={arrowup:'w',arrowdown:'s',arrowleft:'a',arrowright:'d'};
  function key(e,down){let k=e.key.toLowerCase();k=aliases[k]||k;if(!down)keys.delete(k);if(!driving||/INPUT|SELECT|TEXTAREA/.test(e.target?.tagName)||e.target?.isContentEditable)return;
@@ -64,7 +64,7 @@ export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark,
  cameraFollow(dt);if(floor)floor.position.set(state.x,-.015,state.z);
  sun.position.copy(vehicle.position).add(new THREE.Vector3(-5,11,7));sun.target.position.copy(vehicle.position);
  $('speed').textContent=String(Math.round(Math.abs(state.speed)*2.237)).padStart(2,'0');$('drive-state').textContent=state.boost>0?'BOOST':state.pitch>.04?'LIFT OFF':state.slip>.45?'SLIDING': '';
- const next=route.gates.find(g=>!g.passed&&g.s>progress-10);$('mission').textContent=next?`${next.d.artist} · ${Math.max(0,Math.round(next.s-progress))} m ahead`:'Follow the line';
+ const next=route.gates.find(g=>!g.passed&&g.s>progress-10);if(next&&next!==route.preloadedGate){route.preloadedGate=next;preloadPortal?.(next.d.wrap);}$('mission').textContent=next?`${next.d.artist} · ${Math.max(0,Math.round(next.s-progress))} m ahead`:'Follow the line';
  rewardTime-=dt;if(rewardTime<=0)$('ticket-pop').hidden=true;document.body.classList.toggle?.('boosting',state.boost>0);toastTime-=dt;if(toastTime<=0)$('portal-toast').hidden=true;
  for(let i=rings.length-1;i>=0;i--){const r=rings[i];r.age+=dt;r.mesh.visible=r.age>=0;const scale=2+Math.max(0,r.age)*15;r.mesh.scale.setScalar(scale);r.mesh.material.opacity=Math.max(0,.8*(1-r.age/1.9));if(r.age>1.9){world.remove(r.mesh);r.mesh.geometry.dispose();r.mesh.material.dispose();rings.splice(i,1)}}return true;
  }

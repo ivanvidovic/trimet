@@ -1,4 +1,4 @@
-# TriMet Art Ride v0.26
+# TriMet Art Ride v0.27
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -64,3 +64,8 @@ The canvas fills the available viewport; UI sits above it. Camera distance fits 
 Mobile: game controls suppress text selection, tap highlight and long-press menus. Tap Tilt steering to opt in, hold the phone comfortably for calibration, and use GO/Brake normally. Calibrate resets neutral. Orientation changes recalibrate; unavailable or denied motion access retains touch-arrow steering. Some embedded browsers may not expose motion sensors; use the hosted HTTPS page in your phone browser. Esc clears canvas focus on return to the garage.
 
 Validation: front/rear pivot displacement, permission/denial/calibration logic, portrait/landscape steering mapping, framing math, shader injection and film-mask uniforms, and existing driving/landing/portal/reward tests passed. Actual phone sensor behavior, GPU shader rendering and visual carousel timing require a live device/browser check, unavailable during authoring. Approved lighting and driving physics balance retained.
+
+## v0.27 — preload and mobile layout
+Compact top-aligned mobile garage and driving information, with touch controls along the bottom. Floating arrow glyphs. Simultaneous carousel movement with a small gap; current and neighboring wraps are loaded and GPU textures initialized before arrows enable. Upcoming portal artwork is prefetched. Stop signs use a raster export of the original rosette; posts end beneath the panels.
+
+Automated preload/cache and carousel checks pass. Live browser/GPU and physical mobile verification remain unavailable.
