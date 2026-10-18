@@ -1,4 +1,4 @@
-# TriMet Art Ride v0.27
+# TriMet Art Ride v0.28
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -69,3 +69,10 @@ Validation: front/rear pivot displacement, permission/denial/calibration logic, 
 Compact top-aligned mobile garage and driving information, with touch controls along the bottom. Floating arrow glyphs. Simultaneous carousel movement with a small gap; current and neighboring wraps are loaded and GPU textures initialized before arrows enable. Upcoming portal artwork is prefetched. Stop signs use a raster export of the original rosette; posts end beneath the panels.
 
 Automated preload/cache and carousel checks pass. Live browser/GPU and physical mobile verification remain unavailable.
+
+## v0.28 — off-screen carousel and artist links
+Carousel travel now clears the entire camera frustum before entry and after exit, including portrait and ultrawide screens. Both buses still move together and adjacent assets remain preloaded. Removed the outgoing opacity fade and blanket transparency on preview materials; opaque interiors retain depth-tested opaque rendering while glass and film retain their own materials.
+
+Instagram links beside the artist credit: Mike Bennett @mikebennettart, Saleam @saleam108, Bleached by Josh @bleachedbyjosh. Links open a new tab and are hidden for fleet wraps.
+
+Verified off-screen bounds at six aspect ratios and four orientations, material render flags, links, preload behavior, suspension, driving and asset paths. Live GPU/browser and physical mobile visual verification remain outstanding.
