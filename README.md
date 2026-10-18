@@ -29,3 +29,10 @@ To preview locally, serve this folder over HTTP (for example `python -m http.ser
 
 ## Verification
 Automated checks covered actual GLB pivot discovery, wheel/reverse animation, launch/landing, sideways drift, all five cameras, all seven portal transitions, route seams and bounded scene size over 10 km, reset, and relative file paths. Live browser/GPU and touch-device verification was unavailable in the authoring session.
+
+## Lighting and arcade additions (v0.22)
+Softer lighting, automatic garage rotation (drag or select a view to pause; Auto rotate resumes), a spring rebound on wheelie landing, working headlights and braking lamps. Roof markers remain steady.
+
+Bus stops: pass for 5 tickets, or pull into the blue bay and remain stopped for just over one second for 25 tickets and a kneeling animation. Each stop rewards once. Accelerate to raise the bus again. White strips on the road trigger a short boost with streaks and a camera effect. Road colors blend over 60 metres around each portal. Duplicate section-boundary objects and intersecting sculpture layers were removed.
+
+Automated checks also cover lamp states, ticket payout guards, kneeling/recovery, boost activation, landing compression/rebound, showcase rotation and gradient continuity. Visual browser verification remains unavailable.
