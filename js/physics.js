@@ -3,7 +3,7 @@ export const RADIUS=.535, WHEELBASE=6.886, BOOST_DURATION=1.4;
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const damp=(a,b,k,dt)=>b+(a-b)*Math.exp(-k*dt);
 export function boostEnvelope(remaining){const elapsed=BOOST_DURATION-remaining;const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};return remaining>0?smooth(elapsed/.25)*smooth(remaining/.4):0;}
-export function resetState(x=0,z=0,yaw=0){return {x,z,yaw,vx:0,vz:0,steer:0,yawRate:0,speed:0,slip:0,pitch:0,roll:0,launch:0,travel:0,acceleration:0,bounce:0,bounceV:0,boost:0};}
+export function resetState(x=0,z=0,yaw=0){return {x,z,yaw,vx:0,vz:0,steer:0,yawRate:0,speed:0,slip:0,pitch:0,pitchV:0,airborne:false,landingCount:0,landingSpeed:0,roll:0,launch:0,travel:0,acceleration:0,bounce:0,bounceV:0,boost:0};}
 export function step(s,input,dt,offroad=false){
  const fx=-Math.cos(s.yaw),fz=Math.sin(s.yaw),rx=-Math.sin(s.yaw),rz=-Math.cos(s.yaw);
  let forward=s.vx*fx+s.vz*fz,lateral=s.vx*rx+s.vz*rz;
@@ -29,12 +29,28 @@ export function step(s,input,dt,offroad=false){
  const dx=s.vx*dt,dz=s.vz*dt;s.x+=dx;s.z+=dz;
  const signedDistance=dx*(-Math.cos(s.yaw))+dz*Math.sin(s.yaw);
  s.travel+=signedDistance;s.speed=forward;
- if(input.gas&&!input.wasGas&&Math.abs(forward)<6)s.launch=1;
- const previousLaunch=s.launch;s.launch=Math.max(0,s.launch-dt*.72);
- if(previousLaunch>0&&s.launch===0)s.bounceV=-.95;
- s.bounceV+=(-100*s.bounce-8*s.bounceV)*dt;s.bounce+=s.bounceV*dt;
- const lift=Math.sin(s.launch*Math.PI)*.145;
- s.pitch=damp(s.pitch,lift,10,dt);
+ if(input.gas&&!input.wasGas&&Math.abs(forward)<6&&!s.airborne){s.launch=1;s.airborne=true;}
+ const previousPitch=s.pitch;
+ s.launch=Math.max(0,s.launch-dt*.72);
+ if(s.launch>0){
+  const lift=Math.sin(s.launch*Math.PI)*.145;
+  s.pitch=damp(s.pitch,lift,10,dt);
+  s.pitchV=(s.pitch-previousPitch)/dt;
+ }else if(s.airborne){
+  // Once the lift ends, descend at finite velocity instead of asymptotically settling.
+  s.pitchV-=.9*dt;
+  s.pitch+=s.pitchV*dt;
+  if(s.pitch<=0){
+   // Front tire contact: stop wheel-assembly rotation here, then transfer impact to the sprung body.
+   s.landingSpeed=Math.max(0,-s.pitchV*WHEELBASE);
+   s.pitch=0;s.pitchV=0;s.airborne=false;s.landingCount++;
+   s.bounceV=-clamp(s.landingSpeed*.4,.55,.95);
+  }
+ }else{s.pitch=0;s.pitchV=0;}
+ s.bounceV+=(-100*s.bounce-4*s.bounceV)*dt;s.bounce+=s.bounceV*dt;
+ // Suspension travel stays within the previously checked 75 mm compression envelope.
+ if(s.bounce<-.075){s.bounce=-.075;s.bounceV=Math.max(0,s.bounceV);}
+ if(s.bounce>.05){s.bounce=.05;s.bounceV=Math.min(0,s.bounceV);}
  s.roll=damp(s.roll,clamp(-s.yawRate*forward*.003,-.075,.075),6,dt);
  return signedDistance;
 }

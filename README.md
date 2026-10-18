@@ -1,4 +1,4 @@
-# TriMet Art Ride v0.24
+# TriMet Art Ride v0.25
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -50,3 +50,8 @@ Garage uses side arrows and a left-hand artwork title/count/start control, with 
 All non-wheel attachments now share one sprung assembly for landing bounce and bus-stop kneeling. Four wheel branches remain separate. Actual exported hierarchy verification confirms 167 non-wheel nodes move together and 30 wheel nodes remain fixed during vertical suspension motion. Stops carry the original TriMet rosette.
 
 Approved v0.23 lighting and driving balance retained. Root-level index.html and all dependencies included. Live browser layout and visual motion verification remains outstanding.
+
+## v0.25 — touchdown-driven suspension
+The wheelie descends to explicit front-wheel contact before transferring impact into the complete sprung assembly. The normal launch produces about 7 cm of compression, 3.7 cm of rebound, then a smaller settling bounce. Compression remains bounded by the 75 mm clearance envelope. Wheel pitch stays at zero after touchdown; bounce strength scales with downward impact speed.
+
+Tests cover no pre-contact bounce, one landing per launch, grounded wheel pitch after contact, rebound order/amplitude, settling, impact strength limits, and consistent behavior at 60/120/240 Hz. Existing assembly, driving, reward, portal and packaging checks retained. Lighting, garage UI and driving balance unchanged. Live visual/browser verification remains outstanding.
