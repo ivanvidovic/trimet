@@ -1,4 +1,4 @@
-# TriMet Art Ride v0.25
+# TriMet Art Ride v0.26
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -55,3 +55,12 @@ Approved v0.23 lighting and driving balance retained. Root-level index.html and 
 The wheelie descends to explicit front-wheel contact before transferring impact into the complete sprung assembly. The normal launch produces about 7 cm of compression, 3.7 cm of rebound, then a smaller settling bounce. Compression remains bounded by the 75 mm clearance envelope. Wheel pitch stays at zero after touchdown; bounce strength scales with downward impact speed.
 
 Tests cover no pre-contact bounce, one landing per launch, grounded wheel pitch after contact, rebound order/amplitude, settling, impact strength limits, and consistent behavior at 60/120/240 Hz. Existing assembly, driving, reward, portal and packaging checks retained. Lighting, garage UI and driving balance unchanged. Live visual/browser verification remains outstanding.
+
+## v0.26 — mobile controls, full viewport and transitions
+Front landing bounce now pitches the complete sprung assembly around the rear axle instead of translating the whole body vertically. Rear axle and wheels remain planted after touchdown. Bus-stop kneeling remains a separate body-height adjustment.
+
+The canvas fills the available viewport; UI sits above it. Camera distance fits the bus through a full garage rotation in portrait and landscape. Garage arrows preload and queue a directional slide; portal changes use a 1.05-second soft front-to-back artwork wipe, including perforated window film. Glass and body remain solid.
+
+Mobile: game controls suppress text selection, tap highlight and long-press menus. Tap Tilt steering to opt in, hold the phone comfortably for calibration, and use GO/Brake normally. Calibrate resets neutral. Orientation changes recalibrate; unavailable or denied motion access retains touch-arrow steering. Some embedded browsers may not expose motion sensors; use the hosted HTTPS page in your phone browser. Esc clears canvas focus on return to the garage.
+
+Validation: front/rear pivot displacement, permission/denial/calibration logic, portrait/landscape steering mapping, framing math, shader injection and film-mask uniforms, and existing driving/landing/portal/reward tests passed. Actual phone sensor behavior, GPU shader rendering and visual carousel timing require a live device/browser check, unavailable during authoring. Approved lighting and driving physics balance retained.
