@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import {resetState,step,RADIUS,damp} from './physics.js';
+import {resetState,step,RADIUS,damp,BOOST_DURATION,boostEnvelope} from './physics.js';
+import {createBodyRig} from './body-rig.js';
 import {createLamps} from './lamps.js';
 import {createRoute} from './route.js';
-export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark}){
+export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark,rosette}){
  const $=id=>document.getElementById(id),world=new THREE.Group(),vehicle=new THREE.Group(),tilt=new THREE.Group();
  scene.add(world,vehicle);world.visible=false;vehicle.add(tilt);tilt.position.x=3.241;tilt.add(bus);bus.position.x=-3.241;
- const lamps=createLamps(bus);let body;bus.traverse(o=>{if(/Body.*suspension.*pitch/i.test(o.name))body=o});const bodyY=body?.position.y??0;
+ const lamps=createLamps(bus),bodyRig=createBodyRig(bus);
  const wheels=[],steers=[];bus.traverse(o=>{if(/wheel.*ROTATE.*Y/i.test(o.name)&&!o.isMesh)wheels.push({o,q:o.quaternion.clone(),angle:0});if(/steering/i.test(o.name)&&!o.isMesh)steers.push({o,q:o.quaternion.clone()})});
  if(wheels.length!==4)throw new Error(`Expected four wheel pivots; found ${wheels.length}`);
  const axle=new THREE.Vector3(0,0,1),up=new THREE.Vector3(0,1,0),q=new THREE.Quaternion();
@@ -14,9 +15,9 @@ export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark}
  const look=new THREE.Vector3(),eye=new THREE.Vector3();scene.add(sun.target);
  function cycle(){mode=(mode+1)%modes.length;$('camera-mode').textContent='Camera: '+modes[mode]+' · C';}
  function clearRings(){for(const r of rings){world.remove(r.mesh);r.mesh.geometry.dispose();r.mesh.material.dispose()}rings.length=0;}
- function resetPose(){if(body)body.position.y=bodyY;kneel=0;lamps.update(false);tilt.rotation.set(0,0,0);wheels.forEach(w=>{w.angle=0;w.o.quaternion.copy(w.q)});steers.forEach(w=>w.o.quaternion.copy(w.q));}
+ function resetPose(){bodyRig.setHeight(0);kneel=0;lamps.update(false);tilt.rotation.set(0,0,0);tilt.position.y=0;wheels.forEach(w=>{w.angle=0;w.o.quaternion.copy(w.q)});steers.forEach(w=>w.o.quaternion.copy(w.q));}
  function reset(newRun=false){keys.clear();touch.clear();wasGas=false;accumulator=0;last=0;clearRings();resetPose();
- if(newRun){route?.dispose();route=createRoute(world);progress=0;portalCount=0;tickets=0;$('tickets').textContent='0';runId++;}
+ if(newRun){route?.dispose();route=createRoute(world,Math.random()*0xffffffff,rosette);progress=0;portalCount=0;tickets=0;$('tickets').textContent='0';runId++;}
  const p=route.nearest(state.x,state.z);state=resetState(newRun?0:p.x,newRun?0:p.z,newRun?0:p.yaw);vehicle.position.set(state.x,0,state.z);vehicle.rotation.y=state.yaw;$('portal-toast').hidden=true;$('drive-state').textContent='';$('ticket-pop').hidden=true;
  if(newRun){$('line').textContent='BLUE LINE';$('line').style.background='#075699';}cameraFollow(1,true);
  }
@@ -37,7 +38,7 @@ export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark}
  Promise.resolve(choose(g.d.wrap)).then(()=>{if(!driving||currentRun!==runId)return;const t=$('portal-toast');t.replaceChildren();const label=document.createElement('span');label.textContent=g.d.line+' LINE · NEW NEIGHBORHOOD';const name=document.createElement('strong');name.textContent=g.d.artist;const title=document.createElement('span');title.textContent=g.d.title;t.append(label,name,title);t.hidden=false;toastTime=3.5;});}
  function cameraFollow(dt,snap=false){const f=new THREE.Vector3(-Math.cos(state.yaw),0,Math.sin(state.yaw)),r=new THREE.Vector3(-Math.sin(state.yaw),0,-Math.cos(state.yaw));const p=vehicle.position;
  const configs=[[-19,8,3,5],[-13,4,1,5],[-22,21,0,10],[0,6,21,0],[16,7,13,0]],c=configs[mode];eye.copy(p).addScaledVector(f,c[0]).addScaledVector(r,c[2]);eye.y=c[1];const wanted=p.clone().addScaledVector(f,c[3]);wanted.y=2;
- const blend=snap?1:1-Math.exp(-5*dt);camera.position.lerp(eye,blend);look.lerp(wanted,blend);camera.lookAt(look);const fov=(mode===1?48:mode===2?44:42)+(state.boost>0?5:0);camera.fov=damp(camera.fov,fov,4,dt);camera.updateProjectionMatrix();}
+ const blend=snap?1:1-Math.exp(-5*dt);camera.position.lerp(eye,blend);look.lerp(wanted,blend);camera.lookAt(look);const fov=(mode===1?48:mode===2?44:42)+(3*boostEnvelope(state.boost));camera.fov=damp(camera.fov,fov,4,dt);camera.updateProjectionMatrix();}
  function reward(amount,label){tickets+=amount;$('tickets').textContent=String(tickets);const el=$('ticket-pop');el.textContent=`+${amount} TICKETS · ${label}`;el.hidden=false;el.classList?.remove('collect');void el.offsetWidth;el.classList?.add('collect');rewardTime=2;}
  function tick(dt){const near=route.nearest(state.x,state.z),oldX=state.x,oldZ=state.z;const input={gas:held('w'),brake:held('s'),turn:Number(held('a'))-Number(held('d')),handbrake:held(' '),wasGas};const distance=step(state,input,dt,near.distance>10);wasGas=input.gas;
  progress=Math.max(progress,near.s);route.ensure(progress);
@@ -49,9 +50,9 @@ export function makeDrive({scene,bus,camera,controls,sun,floor,choose,view,mark}
  }
  // Hold the kneel until the driver accelerates, then return to normal ride height.
  if(stopped)kneel=damp(kneel,.10,5,dt);else if(input.gas||Math.abs(state.speed)>1)kneel=damp(kneel,0,5,dt);
- for(const boost of route.boosts){if(boost.claimed)continue;const dx=state.x-boost.x,dz=state.z-boost.z,along=-dx*Math.cos(boost.yaw)+dz*Math.sin(boost.yaw),across=dx*Math.sin(boost.yaw)+dz*Math.cos(boost.yaw);if(Math.abs(along)<4&&Math.abs(across)<4.5){boost.claimed=true;state.boost=2.3;}}
+ for(const boost of route.boosts){if(boost.claimed)continue;const dx=state.x-boost.x,dz=state.z-boost.z,along=-dx*Math.cos(boost.yaw)+dz*Math.sin(boost.yaw),across=dx*Math.sin(boost.yaw)+dz*Math.cos(boost.yaw);if(Math.abs(along)<4&&Math.abs(across)<4.5){boost.claimed=true;state.boost=BOOST_DURATION;}}
  lamps.update(input.brake||input.handbrake);
- if(body)body.position.y=bodyY+state.bounce-kneel;
+ bodyRig.setHeight(state.bounce-kneel);
  
  for(const g of route.gates){if(g.passed)continue;const fx=-Math.cos(g.yaw),fz=Math.sin(g.yaw),before=(oldX-g.x)*fx+(oldZ-g.z)*fz,after=(state.x-g.x)*fx+(state.z-g.z)*fz;
  if(before<0&&after>=0){const t=-before/(after-before),x=oldX+(state.x-oldX)*t,z=oldZ+(state.z-oldZ)*t;const across=(x-g.x)*Math.sin(g.yaw)+(z-g.z)*Math.cos(g.yaw);if(Math.abs(across)<9)cross(g);}}

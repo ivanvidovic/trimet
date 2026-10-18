@@ -1,4 +1,4 @@
-# TriMet Art Ride
+# TriMet Art Ride v0.24
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -36,3 +36,17 @@ Softer lighting, automatic garage rotation (drag or select a view to pause; Auto
 Bus stops: pass for 5 tickets, or pull into the blue bay and remain stopped for just over one second for 25 tickets and a kneeling animation. Each stop rewards once. Accelerate to raise the bus again. White strips on the road trigger a short boost with streaks and a camera effect. Road colors blend over 60 metres around each portal. Duplicate section-boundary objects and intersecting sculpture layers were removed.
 
 Automated checks also cover lamp states, ticket payout guards, kneeling/recovery, boost activation, landing compression/rebound, showcase rotation and gradient continuity. Visual browser verification remains unavailable.
+
+## v0.23 — balanced driving
+Boost acceleration reduced from 17 to a peak of 8 m/s²; duration reduced from 2.3 to 1.4 seconds, with smooth entry/exit. Braking overrides boost thrust. Steering becomes gentler with speed, normal lateral grip is stronger, and drift is reserved for aggressive high-speed turns or the handbrake. Countersteering restores grip faster. Wheelies, landing bounce, lights, stops, tickets and portals are retained.
+
+Release ZIP filenames include their version. Keep prior ZIPs for rollback; extract only the desired release into the repository root.
+
+Lighting adjustment: lower exposure and key light, neutral key color, reduced wrap reflections/clearcoat and broader highlights. Ambient fill retained to protect shadow detail; original artwork textures and clear reflective glass retained. Yellow source texture visually inspected; live rendered appearance still requires browser review.
+
+## v0.24 — garage and complete body motion
+Garage uses side arrows and a left-hand artwork title/count/start control, with a large artist name centered under the bus. Fleet options hide the artist credit. Initial load randomly selects one of the eight non-neutral wraps; Neutral remains selectable with the arrows.
+
+All non-wheel attachments now share one sprung assembly for landing bounce and bus-stop kneeling. Four wheel branches remain separate. Actual exported hierarchy verification confirms 167 non-wheel nodes move together and 30 wheel nodes remain fixed during vertical suspension motion. Stops carry the original TriMet rosette.
+
+Approved v0.23 lighting and driving balance retained. Root-level index.html and all dependencies included. Live browser layout and visual motion verification remains outstanding.
