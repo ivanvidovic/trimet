@@ -1,4 +1,4 @@
-# TriMet Art Ride v0.28
+# TriMet Art Ride v0.29
 
 Upload the contents of this folder to your repository root. `index.html` must be directly at the root, alongside `assets/`, `css/`, and `js/`.
 
@@ -76,3 +76,10 @@ Carousel travel now clears the entire camera frustum before entry and after exit
 Instagram links beside the artist credit: Mike Bennett @mikebennettart, Saleam @saleam108, Bleached by Josh @bleachedbyjosh. Links open a new tab and are hidden for fleet wraps.
 
 Verified off-screen bounds at six aspect ratios and four orientations, material render flags, links, preload behavior, suspension, driving and asset paths. Live GPU/browser and physical mobile visual verification remain outstanding.
+
+## v0.29 — Off the Rails café pit stops
+Three portal crossings count as the first loop and unlock cafés. The first café is scheduled beyond the visible route; subsequent locations are spaced randomly 500–800 m apart. Look for the OFF THE RAILS distance cue, pull into the bay, and stop for one second to begin recharging. Energy refills at 20% per second. Existing boost strips consume 25%; ordinary driving remains available at zero energy. New drives begin at 100%.
+
+The supplied café GLB is preloaded with embedded textures and clear reflective glass. It retains its metre scale and uses the current environment/lighting. The roadside bay has a straight approach, reserved scenery space, and a simple bus-footprint collision check around the café and its overhangs. Cached café geometry is reused without reloading or disposing it as old road sections are removed.
+
+Automated checks cover actual café geometry, embedded images, three-crossing unlock, repeated placements, random spacing, straight approaches, bay/collider alignment, recharge interruptions and limits, cache-safe removal, existing driving, carousel bounds and package paths. Live GPU/browser and physical mobile checks remain outstanding.
